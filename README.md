@@ -17,15 +17,25 @@ it against a YAML contract of shape and behavior assertions. The three CLI verbs
 
 ## Install
 
-No clone needed — install the CLI globally straight from GitHub (builds on
-install; requires Node ≥ 20):
+No clone, no build — install the prebuilt CLI from the latest GitHub release
+(requires Node ≥ 20):
 
 ```bash
-npm install -g github:a7medalhadi/aguiar
+npm install -g https://github.com/a7medalhadi/aguiar/releases/download/v0.1.0/aguiar-0.1.0.tgz
 aguiar --help
 ```
 
-npm registry publication (`npx aguiar …`) is planned — see the project backlog.
+Or run it one-off without installing anything:
+
+```bash
+npx https://github.com/a7medalhadi/aguiar/releases/download/v0.1.0/aguiar-0.1.0.tgz --help
+```
+
+To add it to a project instead (e.g. as a devDependency for CI), a git spec also
+works: `npm install -D github:a7medalhadi/aguiar` (builds on install; note that
+*global* installs from a git spec hit a known npm limitation — use the release
+tarball above for `-g`). npm registry publication (`npx aguiar …`) is planned —
+see the project backlog.
 
 ## Quickstart
 
