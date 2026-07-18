@@ -15,7 +15,28 @@ it against a YAML contract of shape and behavior assertions. The three CLI verbs
   (0 = pass, 1 = contract violation, 2 = usage or I/O error). Options: `--url <url>`,
   `--out <file>`.
 
+## Install
+
+No clone needed — install the CLI globally straight from GitHub (builds on
+install; requires Node ≥ 20):
+
+```bash
+npm install -g github:a7medalhadi/aguiar
+aguiar --help
+```
+
+npm registry publication (`npx aguiar …`) is planned — see the project backlog.
+
 ## Quickstart
+
+With the global install, from your agent's repo (scenario files live wherever
+you keep them — they're plain YAML + JSON Schema):
+
+```bash
+aguiar check path/to/scenario.yaml --url http://localhost:2024
+```
+
+Or from a clone of this repo, using the bundled example contract:
 
 ```bash
 pnpm install && pnpm build
