@@ -1,9 +1,12 @@
-# aguiar
+# aguiar — AG-UI Assertion Runner
 
-Contract testing for agent event streams. `aguiar` is Pact-style contract testing
-adapted to nondeterministic LLM agent streams: it plays a scripted user
-conversation against a real agent, records the normalized event stream, and checks
-it against a YAML contract of shape and behavior assertions. The three CLI verbs are:
+Contract testing for agent event streams. **aguiar** (**AG-UI** **A**ssertion
+**R**unner) is Pact-style contract testing adapted to nondeterministic LLM agent
+streams: it plays a scripted user conversation against a real agent, records the
+normalized event stream, and checks it against a YAML contract of shape and
+behavior assertions. v1 speaks to LangGraph agents directly; an [AG-UI](https://ag-ui.com)
+transport adapter is on the roadmap, making the contract engine protocol-agnostic.
+The three CLI verbs are:
 
 - `aguiar record <scenario>` — connect to the agent, drive the scenario (playing the
   user's side of any human-in-the-loop turns), and write a JSONL trace. Options:

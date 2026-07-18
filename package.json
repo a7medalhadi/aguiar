@@ -2,7 +2,7 @@
   "name": "aguiar",
   "version": "0.1.0",
   "type": "module",
-  "description": "Contract testing for agent event streams",
+  "description": "AG-UI Assertion Runner — contract testing for agent event streams",
   "license": "MIT",
   "repository": "github:a7medalhadi/aguiar",
   "bin": { "aguiar": "./dist/cli.js" },
