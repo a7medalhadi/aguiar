@@ -59,12 +59,14 @@ node dist/cli.js check examples/scenarios/item-create-cancel.yaml --url http://l
 This requires a LangGraph dev server running on `:2024` — start one with
 `langgraph dev` from your agent's project.
 
-**Verified against agent on 2026-07-18:** smoke run pending — no process was
-listening on `:2024` in this environment (`curl -sf -m 3 http://localhost:2024/info`
-returned a connection error, exit 7). This has not been run against a live agent
-yet. To execute it, run `langgraph dev` against any LangGraph agent, then from this
-repo run the exact command above (or any other `examples/scenarios/*.yaml` file)
-against that local dev server, and record the real `PASSED`/`FAILED` outcome here.
+**Verified against a live agent on 2026-07-18:** `aguiar check` (installed from
+the v0.1.0 release tarball) ran a smoke scenario — one user turn, asserting
+`eventually` an assistant `text_message`, `never` a `run_error`, and `paired`
+tool calls — against a real multi-agent LangGraph app served by `langgraph dev`
+on `:2024`. Result: 9 events recorded, all three assertions **PASSED**, exit 0.
+Interrupt/HITL scenarios run the same engine and are exercised against private
+deployments; the bundled `examples/` scenarios require an agent exposing an
+`example_agent` graph.
 
 ## Contract authoring
 
