@@ -32,7 +32,10 @@ program
 
 async function doRecord(scenarioPath: string, opts: { url: string; out?: string }): Promise<string> {
   const scenario = loadScenario(scenarioPath);
-  const client = new Client({ apiUrl: opts.url }) as unknown as LangGraphClientLike;
+  const client = new Client({
+    apiUrl: opts.url,
+    defaultHeaders: scenario.headers,
+  }) as unknown as LangGraphClientLike;
   const events = await recordScenario(client, scenario);
   const out = opts.out ?? join("traces", `${scenario.name}-${Date.now()}.jsonl`);
   mkdirSync(dirname(out), { recursive: true });

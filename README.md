@@ -23,14 +23,14 @@ No clone, no build — install the prebuilt CLI from the latest GitHub release
 (requires Node ≥ 20):
 
 ```bash
-npm install -g https://github.com/a7medalhadi/aguiar/releases/download/v0.1.0/aguiar-0.1.0.tgz
+npm install -g https://github.com/a7medalhadi/aguiar/releases/download/v0.2.0/aguiar-0.2.0.tgz
 aguiar --help
 ```
 
 Or run it one-off without installing anything:
 
 ```bash
-npx https://github.com/a7medalhadi/aguiar/releases/download/v0.1.0/aguiar-0.1.0.tgz --help
+npx https://github.com/a7medalhadi/aguiar/releases/download/v0.2.0/aguiar-0.2.0.tgz --help
 ```
 
 To add it to a project instead (e.g. as a devDependency for CI), a git spec also
@@ -74,6 +74,24 @@ Each step is exactly one of:
 - `respond: { action: submit | change | cancel, value?: ... }` — resume the
   interrupted run with a HITL response (shape documented in
   `examples/schemas/hitl_response.json`).
+
+### Context and headers
+
+Driving an agent directly bypasses whatever your production ingress injects into
+the run (auth tokens, user/tenant ids, locale). Two optional top-level blocks
+supply those:
+
+```yaml
+context:            # merged into the run input alongside `messages`
+  store_id: "${MY_STORE_ID}"
+  token: "${MY_TOKEN}"
+headers:            # default HTTP headers on the LangGraph client
+  X-Access-Client-Id: "${ACCESS_ID}"
+```
+
+`${VAR}` references inside `context` and `headers` are replaced from the
+environment at load time; an unset variable is a hard error (exit 2), so secrets
+stay out of committed YAML and an empty token is never sent silently.
 
 ### Assertions
 
