@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HitlResponse resume value",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": ["action", "value"],
+      "properties": { "action": { "const": "submit" }, "value": {} }
+    },
+    {
+      "type": "object",
+      "required": ["action", "value"],
+      "properties": { "action": { "const": "change" }, "value": { "type": "string" } }
+    },
+    {
+      "type": "object",
+      "required": ["action"],
+      "properties": { "action": { "const": "cancel" } }
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+{"type":"run_started","ts":"2026-07-18T00:00:00Z"}
+{"type":"tool_call_start","ts":"2026-07-18T00:00:01Z","id":"tc-preview-1","name":"preview_item","args":{"item_id":123}}
+{"type":"tool_call_end","ts":"2026-07-18T00:00:02Z","id":"tc-preview-1","result":{"ok":true}}
+{"type":"state_snapshot","ts":"2026-07-18T00:00:03Z","state":{"messages":[{"id":"m1","type":"ai","content":"Here is the item"}]}}
+{"type":"run_finished","ts":"2026-07-18T00:00:04Z"}

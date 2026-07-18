@@ -1,0 +1,7 @@
+{"type":"run_started","ts":"2026-07-18T00:00:00Z"}
+{"type":"tool_call_start","ts":"2026-07-18T00:00:01Z","id":"tc-preview-1","name":"preview_item","args":{"item_id":123}}
+{"type":"tool_call_end","ts":"2026-07-18T00:00:02Z","id":"tc-preview-1","result":{"ok":true}}
+{"type":"interrupt","ts":"2026-07-18T00:00:03Z","payload":{"hitl":{"kind":"item_detail","id":"item-detail","item":{"name":"blue notebook","quantity":3}}}}
+{"type":"resume","ts":"2026-07-18T00:00:04Z","value":{"action":"cancel"}}
+{"type":"state_snapshot","ts":"2026-07-18T00:00:05Z","state":{"messages":[{"id":"m1","type":"ai","content":"Here is the item","tool_calls":[{"id":"tc-preview-1","name":"preview_item"}]}]}}
+{"type":"run_finished","ts":"2026-07-18T00:00:06Z"}

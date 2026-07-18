@@ -1,0 +1,14 @@
+name: item-create-submit
+agent: example_agent
+steps:
+  - user: "Add a blue notebook with quantity 3"
+  - expect_interrupt:
+      where: { "payload.hitl.kind": "item_detail" }
+  - respond: { action: submit, value: "yes" }
+assert:
+  - eventually:
+      event: interrupt
+      where: { "payload.hitl.kind": "item_detail" }
+      schema: ../schemas/item_detail.json
+      schema_path: payload.hitl
+  - paired: tool_calls

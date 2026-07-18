@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "item_detail interrupt spec (example)",
+  "type": "object",
+  "required": ["kind", "id", "item"],
+  "properties": {
+    "kind": { "const": "item_detail" },
+    "id": { "type": "string" },
+    "item": {
+      "type": "object",
+      "required": ["name", "quantity"],
+      "additionalProperties": true,
+      "properties": {
+        "name": { "type": "string" },
+        "quantity": { "type": "number" },
+        "description": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "priority": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+{"type":"run_started","ts":"2026-07-18T00:00:00Z"}
+{"type":"text_message","ts":"2026-07-18T00:00:01Z","id":"m1","role":"assistant","content":"Adding the item now"}
+{"type":"state_snapshot","ts":"2026-07-18T00:00:02Z","state":{"messages":[{"id":"m1","type":"ai","content":"Adding the item now"}]}}
+{"type":"run_finished","ts":"2026-07-18T00:00:03Z"}

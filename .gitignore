@@ -1,0 +1,6 @@
+node_modules/
+dist/
+traces/
+.superpowers/
+pilot/
+docs/superpowers/
