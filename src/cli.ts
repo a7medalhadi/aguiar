@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { createRequire } from "node:module";
 import { Command, CommanderError } from "commander";
 import { Client } from "@langchain/langgraph-sdk";
 import { loadScenario } from "./contract.js";
@@ -10,7 +11,9 @@ import { recordScenario, type LangGraphClientLike } from "./adapters/langgraph.j
 
 export const program = new Command();
 
-program.name("aguiar").description("Contract testing for agent event streams").version("0.1.0");
+const { version } = createRequire(import.meta.url)("../package.json") as { version: string };
+
+program.name("aguiar").description("Contract testing for agent event streams").version(version);
 
 // Throw a CommanderError instead of calling process.exit() directly, so we can
 // map commander's own exit codes onto aguiar's convention: usage errors (missing
