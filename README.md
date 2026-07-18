@@ -23,14 +23,14 @@ No clone, no build — install the prebuilt CLI from the latest GitHub release
 (requires Node ≥ 20):
 
 ```bash
-npm install -g https://github.com/a7medalhadi/aguiar/releases/download/v0.2.0/aguiar-0.2.0.tgz
+npm install -g https://github.com/a7medalhadi/aguiar/releases/download/v0.2.1/aguiar-0.2.1.tgz
 aguiar --help
 ```
 
 Or run it one-off without installing anything:
 
 ```bash
-npx https://github.com/a7medalhadi/aguiar/releases/download/v0.2.0/aguiar-0.2.0.tgz --help
+npx https://github.com/a7medalhadi/aguiar/releases/download/v0.2.1/aguiar-0.2.1.tgz --help
 ```
 
 To add it to a project instead (e.g. as a devDependency for CI), a git spec also
