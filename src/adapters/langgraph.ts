@@ -44,7 +44,9 @@ export async function recordScenario(
   for (const [i, step] of scenario.steps.entries()) {
     if ("user" in step) {
       events.push({ type: "text_message", ts: now(), id: `user-${i}`, role: "user", content: step.user });
-      await consume({ input: { messages: [{ type: "human", content: step.user }] } });
+      await consume({
+        input: { ...(scenario.context ?? {}), messages: [{ type: "human", content: step.user }] },
+      });
     } else if ("respond" in step) {
       // Mark the watermark *before* this step's own events land, so a resume
       // that immediately re-interrupts is itself visible to the next

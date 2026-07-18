@@ -109,3 +109,28 @@ describe("recordScenario — chained expect_interrupt watermark", () => {
     expect(events.at(-1)?.type).toBe("run_finished");
   });
 });
+
+describe("recordScenario context injection", () => {
+  it("merges scenario.context into every user turn's run input", async () => {
+    const { client, calls } = fakeClient([
+      [{ event: "values", data: { messages: [] } }, interruptChunk],
+      [{ event: "values", data: { messages: [] } }],
+    ]);
+    const withContext: Scenario = {
+      ...scenario,
+      context: { store_id: "store-123", token: "tok-abc" },
+    };
+    await recordScenario(client, withContext);
+    expect(calls[0]).toEqual(
+      expect.objectContaining({
+        input: expect.objectContaining({
+          store_id: "store-123",
+          token: "tok-abc",
+          messages: [{ type: "human", content: "Add a notebook" }],
+        }),
+      }),
+    );
+    // resume turns carry the command, not a fresh input
+    expect(calls[1]).not.toHaveProperty("input");
+  });
+});

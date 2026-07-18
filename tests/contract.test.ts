@@ -55,3 +55,46 @@ describe("loadScenario", () => {
     expect(() => loadScenario(p)).toThrowError(/unknown assertion/i);
   });
 });
+
+describe("loadScenario context/headers", () => {
+  const WITH_CONTEXT = `
+name: ctx
+agent: example_agent
+steps: [{ user: "hi" }]
+assert: []
+context:
+  store_id: "\${AGUIAR_TEST_STORE}"
+  token: "\${AGUIAR_TEST_TOKEN}"
+  nested: { locale: "ar", tags: ["\${AGUIAR_TEST_STORE}"] }
+headers:
+  X-Client-Id: "\${AGUIAR_TEST_STORE}"
+`;
+
+  it("parses context/headers and interpolates ${ENV} references", () => {
+    process.env.AGUIAR_TEST_STORE = "store-123";
+    process.env.AGUIAR_TEST_TOKEN = "tok-abc";
+    const s = loadScenario(write(WITH_CONTEXT));
+    expect(s.context).toEqual({
+      store_id: "store-123",
+      token: "tok-abc",
+      nested: { locale: "ar", tags: ["store-123"] },
+    });
+    expect(s.headers).toEqual({ "X-Client-Id": "store-123" });
+  });
+
+  it("fails fast when a referenced environment variable is unset", () => {
+    delete process.env.AGUIAR_TEST_TOKEN;
+    process.env.AGUIAR_TEST_STORE = "store-123";
+    expect(() => loadScenario(write(WITH_CONTEXT))).toThrowError(/AGUIAR_TEST_TOKEN.*not set/);
+  });
+
+  it("rejects a non-mapping context", () => {
+    const p = write(WITH_CONTEXT.replace(/context:[\s\S]*headers:/, "context: [1,2]\nheaders:"));
+    process.env.AGUIAR_TEST_STORE = "store-123";
+    expect(() => loadScenario(p)).toThrowError(/"context" must be a mapping/);
+  });
+
+  it("leaves context undefined when absent", () => {
+    expect(loadScenario(write(GOOD)).context).toBeUndefined();
+  });
+});

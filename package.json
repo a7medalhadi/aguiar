@@ -1,6 +1,6 @@
 {
   "name": "aguiar",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "AG-UI Assertion Runner — contract testing for agent event streams",
   "license": "MIT",
