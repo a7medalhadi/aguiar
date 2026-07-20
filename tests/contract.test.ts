@@ -140,9 +140,14 @@ describe("loadScenario with extends", () => {
   it("scenario value wins over defaults on a scalar conflict", () => {
     const p = writeWithDefaults(
       `extends: defaults.yaml\nname: scalar-wins\nagent: from_scenario\n${MINIMAL_STEPS}`,
-      `agent: from_defaults\n`,
+      `agent: from_defaults\nheaders:\n  X-Defaults-Only: static-value\n`,
     );
-    expect(loadScenario(p).agent).toBe("from_scenario");
+    const s = loadScenario(p);
+    expect(s.agent).toBe("from_scenario");
+    // A defaults-only sibling that the scenario never mentions must still
+    // arrive — proving the merge actually ran, not just that the scenario's
+    // own inline `agent` was read.
+    expect(s.headers).toEqual({ "X-Defaults-Only": "static-value" });
   });
 
   it("deep-merges context, keeping sibling keys not overridden by the scenario", () => {
@@ -157,10 +162,12 @@ describe("loadScenario with extends", () => {
   it("replaces arrays wholesale instead of concatenating them", () => {
     const p = writeWithDefaults(
       `extends: defaults.yaml\nname: array-replace\nagent: a\n${MINIMAL_STEPS}context:\n  tags: ["s1"]\n`,
-      `agent: a\ncontext:\n  tags: ["d1", "d2"]\n`,
+      `agent: a\ncontext:\n  tags: ["d1", "d2"]\n  core:\n    token: t1\n`,
     );
     const s = loadScenario(p);
-    expect(s.context).toEqual({ tags: ["s1"] });
+    // `tags` proves wholesale replacement; `core.token` is a defaults-only
+    // sibling the scenario never sets, proving the merge actually ran.
+    expect(s.context).toEqual({ tags: ["s1"], core: { token: "t1" } });
   });
 
   it("interpolates ${ENV} references in values inherited from the defaults file", () => {
@@ -210,10 +217,14 @@ describe("loadScenario with extends", () => {
   it("keeps dir pointing at the scenario's own directory when defaults live elsewhere", () => {
     const p = writeWithDefaultsAcrossDirs(
       `name: cross-dir\nagent: a\n${MINIMAL_STEPS}`,
-      `agent: a\n`,
+      `agent: a\ncontext:\n  store_id: from-defaults\n`,
     );
     const s = loadScenario(p);
     expect(s.dir).toBe(dirname(p));
+    // A defaults-only field must still arrive across the cross-dir extends,
+    // proving the merge ran rather than `dir` merely being correct because
+    // the scenario was self-sufficient.
+    expect(s.context).toEqual({ store_id: "from-defaults" });
   });
 
   it("regression: a scenario without extends still loads unchanged", () => {
