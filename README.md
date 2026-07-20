@@ -93,6 +93,47 @@ headers:            # default HTTP headers on the LangGraph client
 environment at load time; an unset variable is a hard error (exit 2), so secrets
 stay out of committed YAML and an empty token is never sent silently.
 
+### Sharing defaults with `extends`
+
+When many scenarios share the same `agent`, `headers`, and `context` (e.g. one
+agent's auth headers repeated across a dozen scenario files), pull them into a
+separate defaults file instead of duplicating the block:
+
+```yaml
+# defaults.yaml — sits next to the scenarios that use it
+agent: salla_audience_agent
+headers:
+  CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}
+  CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}
+context:
+  core:
+    user_id: ${SALLA_USER_ID}
+    store_id: ${SALLA_STORE_ID}
+    token: ${SALLA_TOKEN}
+```
+
+```yaml
+# item-create-cancel.yaml
+extends: defaults.yaml
+name: item-create-cancel
+steps:
+  - user: "Add a blue notebook with quantity 3"
+assert: []
+```
+
+`extends:` is a path to a YAML file, resolved relative to the scenario file's
+own directory. A defaults file may set only `agent`, `headers`, and `context`
+— nothing else, and it may not itself use `extends` (one level only). This
+keeps a scenario's behavior (`steps`, `assert`) visible at its own call site
+even when its agent and credentials live elsewhere.
+
+Scenario values win over the defaults on conflicts; `context` and `headers`
+are deep-merged key by key (a scenario overriding `context.core.store_id`
+keeps `user_id` and `token` from the defaults), while arrays are replaced
+wholesale rather than concatenated. `${VAR}` interpolation runs after the
+merge, so values inherited from the defaults file are subject to the same
+fail-fast rule as inline ones.
+
 ### Assertions
 
 Four assertions, each an invariant over the whole recorded trace (order-insensitive,

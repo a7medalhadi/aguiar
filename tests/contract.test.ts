@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join, relative } from "node:path";
 import { loadScenario } from "../src/contract.js";
 
 const GOOD = `
@@ -26,6 +26,30 @@ function write(content: string): string {
   const dir = mkdtempSync(join(tmpdir(), "aguiar-"));
   const p = join(dir, "s.yaml");
   writeFileSync(p, content);
+  return p;
+}
+
+/** Writes a scenario and its defaults file side by side in one fresh temp
+ * dir, so `extends: defaults.yaml` resolves. Returns the scenario path. */
+function writeWithDefaults(scenario: string, defaults: string): string {
+  const dir = mkdtempSync(join(tmpdir(), "aguiar-"));
+  writeFileSync(join(dir, "defaults.yaml"), defaults);
+  const p = join(dir, "s.yaml");
+  writeFileSync(p, scenario);
+  return p;
+}
+
+/** Writes a scenario and its defaults file in two *different* temp dirs,
+ * baking a correct relative `extends:` path into the scenario body.
+ * Returns the scenario path. */
+function writeWithDefaultsAcrossDirs(scenarioBody: string, defaults: string): string {
+  const scenarioDir = mkdtempSync(join(tmpdir(), "aguiar-scenario-"));
+  const defaultsDir = mkdtempSync(join(tmpdir(), "aguiar-defaults-"));
+  const defaultsPath = join(defaultsDir, "defaults.yaml");
+  writeFileSync(defaultsPath, defaults);
+  const rel = relative(scenarioDir, defaultsPath);
+  const p = join(scenarioDir, "s.yaml");
+  writeFileSync(p, `extends: ${rel}\n${scenarioBody}`);
   return p;
 }
 
@@ -96,5 +120,107 @@ headers:
 
   it("leaves context undefined when absent", () => {
     expect(loadScenario(write(GOOD)).context).toBeUndefined();
+  });
+});
+
+describe("loadScenario with extends", () => {
+  const MINIMAL_STEPS = `steps: [{ user: "hi" }]\nassert: []\n`;
+
+  it("inherits agent, headers, and context from the defaults file", () => {
+    const p = writeWithDefaults(
+      `extends: defaults.yaml\nname: inherits-all\n${MINIMAL_STEPS}`,
+      `agent: from_defaults_agent\nheaders:\n  X-Client-Id: static-value\ncontext:\n  store_id: static-store\n`,
+    );
+    const s = loadScenario(p);
+    expect(s.agent).toBe("from_defaults_agent");
+    expect(s.headers).toEqual({ "X-Client-Id": "static-value" });
+    expect(s.context).toEqual({ store_id: "static-store" });
+  });
+
+  it("scenario value wins over defaults on a scalar conflict", () => {
+    const p = writeWithDefaults(
+      `extends: defaults.yaml\nname: scalar-wins\nagent: from_scenario\n${MINIMAL_STEPS}`,
+      `agent: from_defaults\n`,
+    );
+    expect(loadScenario(p).agent).toBe("from_scenario");
+  });
+
+  it("deep-merges context, keeping sibling keys not overridden by the scenario", () => {
+    const p = writeWithDefaults(
+      `extends: defaults.yaml\nname: deep-merge\nagent: a\n${MINIMAL_STEPS}context:\n  core:\n    store_id: s2\n`,
+      `agent: a\ncontext:\n  core:\n    user_id: u1\n    store_id: s1\n    token: t1\n`,
+    );
+    const s = loadScenario(p);
+    expect(s.context).toEqual({ core: { user_id: "u1", store_id: "s2", token: "t1" } });
+  });
+
+  it("replaces arrays wholesale instead of concatenating them", () => {
+    const p = writeWithDefaults(
+      `extends: defaults.yaml\nname: array-replace\nagent: a\n${MINIMAL_STEPS}context:\n  tags: ["s1"]\n`,
+      `agent: a\ncontext:\n  tags: ["d1", "d2"]\n`,
+    );
+    const s = loadScenario(p);
+    expect(s.context).toEqual({ tags: ["s1"] });
+  });
+
+  it("interpolates ${ENV} references in values inherited from the defaults file", () => {
+    process.env.AGUIAR_TEST_EXTENDS_VAR = "val-from-env";
+    try {
+      const p = writeWithDefaults(
+        `extends: defaults.yaml\nname: interpolate-inherited\nagent: a\n${MINIMAL_STEPS}`,
+        `agent: a\ncontext:\n  token: "\${AGUIAR_TEST_EXTENDS_VAR}"\n`,
+      );
+      const s = loadScenario(p);
+      expect(s.context).toEqual({ token: "val-from-env" });
+    } finally {
+      delete process.env.AGUIAR_TEST_EXTENDS_VAR;
+    }
+  });
+
+  it("still hard-errors on an unset ${ENV} reference inherited from the defaults file", () => {
+    delete process.env.AGUIAR_TEST_EXTENDS_VAR;
+    const p = writeWithDefaults(
+      `extends: defaults.yaml\nname: unset-inherited\nagent: a\n${MINIMAL_STEPS}`,
+      `agent: a\ncontext:\n  token: "\${AGUIAR_TEST_EXTENDS_VAR}"\n`,
+    );
+    expect(() => loadScenario(p)).toThrowError(/AGUIAR_TEST_EXTENDS_VAR.*not set/);
+  });
+
+  it("throws naming the path when the extends target is missing", () => {
+    const p = write(`extends: nonexistent.yaml\nname: missing-defaults\nagent: a\n${MINIMAL_STEPS}`);
+    expect(() => loadScenario(p)).toThrowError(/extends target "nonexistent\.yaml" not found/);
+  });
+
+  it("throws naming the offending key when the defaults file sets steps", () => {
+    const p = writeWithDefaults(
+      `extends: defaults.yaml\nname: defaults-with-steps\nagent: a\n${MINIMAL_STEPS}`,
+      `agent: a\nsteps: [{ user: "hi" }]\n`,
+    );
+    expect(() => loadScenario(p)).toThrowError(/"steps"/);
+  });
+
+  it("throws when the defaults file itself has a nested extends", () => {
+    const p = writeWithDefaults(
+      `extends: defaults.yaml\nname: nested-extends\nagent: a\n${MINIMAL_STEPS}`,
+      `agent: a\nextends: other.yaml\n`,
+    );
+    expect(() => loadScenario(p)).toThrowError(/nested "extends" is not supported/);
+  });
+
+  it("keeps dir pointing at the scenario's own directory when defaults live elsewhere", () => {
+    const p = writeWithDefaultsAcrossDirs(
+      `name: cross-dir\nagent: a\n${MINIMAL_STEPS}`,
+      `agent: a\n`,
+    );
+    const s = loadScenario(p);
+    expect(s.dir).toBe(dirname(p));
+  });
+
+  it("regression: a scenario without extends still loads unchanged", () => {
+    const s = loadScenario(write(GOOD));
+    expect(s.name).toBe("item-create-cancel");
+    expect(s.agent).toBe("example_agent");
+    expect(s.steps).toHaveLength(3);
+    expect(s.assert).toHaveLength(2);
   });
 });
