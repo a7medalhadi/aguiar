@@ -101,15 +101,15 @@ separate defaults file instead of duplicating the block:
 
 ```yaml
 # defaults.yaml — sits next to the scenarios that use it
-agent: salla_audience_agent
+agent: example_agent
 headers:
-  CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}
-  CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}
+  X-Access-Client-Id: ${ACCESS_CLIENT_ID}
+  X-Access-Client-Secret: ${ACCESS_CLIENT_SECRET}
 context:
   core:
-    user_id: ${SALLA_USER_ID}
-    store_id: ${SALLA_STORE_ID}
-    token: ${SALLA_TOKEN}
+    user_id: ${USER_ID}
+    store_id: ${STORE_ID}
+    token: ${API_TOKEN}
 ```
 
 ```yaml
